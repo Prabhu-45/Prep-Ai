@@ -2,7 +2,9 @@ import React, { useState, useRef, useEffect } from 'react'
 import { Send, X, Bot, User, Sparkles, Loader2 } from 'lucide-react'
 import '../style/interview.scss'
 
-const CoachChat = ({ isOpen, onClose }) => {
+import { chatWithCoach } from '../services/interview.api.js'
+
+const CoachChat = ({ isOpen, onClose, interviewId }) => {
     const [ message, setMessage ] = useState('')
     const [ isTyping, setIsTyping ] = useState(false)
     const [ chatHistory, setChatHistory ] = useState([
@@ -21,24 +23,33 @@ const CoachChat = ({ isOpen, onClose }) => {
         scrollToBottom()
     }, [ chatHistory, isTyping ])
 
-    const handleSend = (e) => {
+    const handleSend = async (e) => {
         e.preventDefault()
         if (!message.trim() || isTyping) return
         
         const userMsg = { role: 'user', content: message }
-        setChatHistory(prev => [ ...prev, userMsg ])
+        const currentHistory = [...chatHistory, userMsg]
+        setChatHistory(currentHistory)
         setMessage('')
         setIsTyping(true)
 
-        // Mock automated response
-        setTimeout(() => {
+        try {
+            const data = await chatWithCoach(interviewId, message, chatHistory)
             const aiMsg = { 
                 role: 'assistant', 
-                content: "That's a great question! Based on your resume, I'd recommend highlighting your specific technical achievements. (Note: Real AI analysis is currently in UI-only mode)." 
+                content: data.reply
             }
             setChatHistory(prev => [ ...prev, aiMsg ])
+        } catch (error) {
+            console.error("Coach Chat Error:", error)
+            const errorMsg = { 
+                role: 'assistant', 
+                content: "I'm sorry, I'm having trouble connecting right now. Please try again." 
+            }
+            setChatHistory(prev => [ ...prev, errorMsg ])
+        } finally {
             setIsTyping(false)
-        }, 1500)
+        }
     }
 
     if (!isOpen) return null

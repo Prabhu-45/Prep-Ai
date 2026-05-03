@@ -166,9 +166,43 @@ async function generateResumePdfController(req, res) {
     }
 }
 
+/**
+ * @name chatWithCoachController
+ */
+async function chatWithCoachController(req, res) {
+    try {
+        const { interviewId } = req.params;
+        const { message, history } = req.body;
+
+        if (!message) {
+            return res.status(400).json({ message: "Message is required" });
+        }
+
+        const interviewReport = await interviewReportModel.findOne({ _id: interviewId, user: req.user.id });
+
+        if (!interviewReport) {
+            return res.status(404).json({ message: "Interview context not found." });
+        }
+
+        const context = {
+            resume: interviewReport.resume,
+            jobDescription: interviewReport.jobDescription
+        };
+
+        const aiService = require("../services/ai.service");
+        const reply = await aiService.generateCoachResponse(context, history, message);
+
+        res.status(200).json({ reply });
+    } catch (err) {
+        console.error("Coach Chat Error:", err);
+        res.status(500).json({ message: "Failed to get response from Coach" });
+    }
+}
+
 module.exports = {
     generateInterViewReportController,
     getInterviewReportByIdController,
     getAllInterviewReportsController,
-    generateResumePdfController
+    generateResumePdfController,
+    chatWithCoachController
 }

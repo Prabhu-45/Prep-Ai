@@ -36,6 +36,12 @@ interviewRouter.get("/", authMiddleware.authUser, interviewController.getAllInte
  * @access private
  */
 interviewRouter.post("/resume/pdf/:interviewReportId", authMiddleware.authUser, interviewController.generateResumePdfController)
+/**
+ * @route POST /api/interview/chat/:interviewId
+ * @description Chat with the AI Career Coach.
+ * @access private
+ */
+interviewRouter.post("/chat/:interviewId", authMiddleware.authUser, interviewController.chatWithCoachController)
 
 
 

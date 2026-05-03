@@ -332,7 +332,7 @@ const Interview = () => {
                 </aside>
             </div>
 
-            <CoachChat isOpen={isCoachOpen} onClose={() => setIsCoachOpen(false)} />
+            <CoachChat isOpen={isCoachOpen} onClose={() => setIsCoachOpen(false)} interviewId={interviewId} />
         </div>
     )
 }
