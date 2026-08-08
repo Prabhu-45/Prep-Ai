@@ -29,7 +29,7 @@ const Login = () => {
         if (user) {
             navigate('/dashboard')
         }
-    }, [ user ])
+    }, [ user, navigate ])
 
     const handleSubmit = async (e) => {
         e.preventDefault()

@@ -199,10 +199,99 @@ async function chatWithCoachController(req, res) {
     }
 }
 
+/**
+ * @name rewriteResumeBulletController
+ */
+async function rewriteResumeBulletController(req, res) {
+    try {
+        const { interviewId } = req.params;
+        const { bullet } = req.body;
+
+        if (!bullet) {
+            return res.status(400).json({ message: "Bullet point text is required" });
+        }
+
+        const interviewReport = await interviewReportModel.findOne({ _id: interviewId, user: req.user.id });
+        if (!interviewReport) {
+            return res.status(404).json({ message: "Interview context not found." });
+        }
+
+        const aiService = require("../services/ai.service");
+        const rewritten = await aiService.rewriteResumeBullet(bullet, interviewReport.jobDescription);
+
+        res.status(200).json({ rewritten });
+    } catch (err) {
+        console.error("Rewrite Bullet Error:", err);
+        res.status(500).json({ message: "Failed to rewrite bullet point" });
+    }
+}
+
+/**
+ * @name renderHtmlToPdfController
+ */
+async function renderHtmlToPdfController(req, res) {
+    try {
+        const { html } = req.body;
+        if (!html) {
+            return res.status(400).json({ message: "HTML content is required" });
+        }
+
+        const aiService = require("../services/ai.service");
+        const pdfBuffer = await aiService.renderHtmlToPdf(html);
+
+        res.set({
+            "Content-Type": "application/pdf",
+            "Content-Disposition": `attachment; filename=resume.pdf`
+        });
+
+        res.send(pdfBuffer);
+    } catch (err) {
+        console.error("HTML to PDF Error:", err);
+        res.status(500).json({ message: "Failed to render PDF." });
+    }
+}
+
+/**
+ * @name parseLinkedinPdfController
+ */
+async function parseLinkedinPdfController(req, res) {
+    try {
+        if (!req.file) {
+            return res.status(400).json({ message: "No LinkedIn PDF uploaded" });
+        }
+
+        const aiService = require("../services/ai.service");
+        
+        let extracted = "";
+        try {
+            const pdfData = new Uint8Array(req.file.buffer);
+            const parser = new pdfParse.PDFParse(pdfData);
+            const result = await parser.getText();
+            extracted = (typeof result === 'string') ? result : (result.text || "");
+        } catch (pdfErr) {
+            extracted = req.file.buffer.toString('utf-8').replace(/[^\x20-\x7E\n]/g, '');
+        }
+
+        if (!extracted || extracted.trim().length < 10) {
+            return res.status(400).json({ message: "Could not read text from the uploaded PDF" });
+        }
+
+        const structuredData = await aiService.parseLinkedinProfile(extracted);
+        res.status(200).json(structuredData);
+
+    } catch (err) {
+        console.error("LinkedIn Parse Error:", err);
+        res.status(500).json({ message: "Failed to parse LinkedIn profile" });
+    }
+}
+
 module.exports = {
     generateInterViewReportController,
     getInterviewReportByIdController,
     getAllInterviewReportsController,
     generateResumePdfController,
-    chatWithCoachController
+    chatWithCoachController,
+    rewriteResumeBulletController,
+    renderHtmlToPdfController,
+    parseLinkedinPdfController
 }

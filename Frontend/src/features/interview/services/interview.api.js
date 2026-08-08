@@ -65,3 +65,33 @@ export const chatWithCoach = async (interviewId, message, history) => {
 
     return response.data
 }
+
+/**
+ * @description Service to rewrite a resume bullet point using NVIDIA API
+ */
+export const rewriteResumeBullet = async (interviewId, bullet) => {
+    const response = await api.post(`/api/interview/resume/rewrite/${interviewId}`, {
+        bullet
+    })
+    return response.data
+}
+
+/**
+ * @description Service to render HTML to PDF buffer
+ */
+export const renderHtmlToPdf = async (html) => {
+    const response = await api.post(`/api/interview/resume/render-pdf`, { html }, {
+        responseType: "blob"
+    })
+    return response.data
+}
+
+/**
+ * @description Service to parse a LinkedIn PDF
+ */
+export const parseLinkedinPdf = async (pdfFile) => {
+    const formData = new FormData();
+    formData.append("linkedinPdf", pdfFile);
+    const response = await api.post(`/api/interview/resume/parse-linkedin`, formData);
+    return response.data;
+}

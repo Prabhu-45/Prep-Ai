@@ -1,4 +1,4 @@
-import { getAllInterviewReports, generateInterviewReport, getInterviewReportById, generateResumePdf } from "../services/interview.api"
+import { getAllInterviewReports, generateInterviewReport, getInterviewReportById, generateResumePdf, rewriteResumeBullet, renderHtmlToPdf, parseLinkedinPdf } from "../services/interview.api"
 import { useContext, useEffect } from "react"
 import { InterviewContext } from "../interview.context"
 import { useParams } from "react-router"
@@ -107,7 +107,21 @@ export const useInterview = () => {
         } else {
             getReports()
         }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [interviewId, report?._id]) // Dependency on report._id ensures stability
+
+    const handleParseLinkedinPdf = async (pdfFile) => {
+        setLoading(true)
+        try {
+            const data = await parseLinkedinPdf(pdfFile)
+            return data
+        } catch (error) {
+            console.error("Parse LinkedIn Error:", error)
+            throw error
+        } finally {
+            setLoading(false)
+        }
+    }
 
     return {
         loading,
@@ -116,7 +130,10 @@ export const useInterview = () => {
         generateReport: handleGenerateReport,
         getReportById,
         getReports,
-        getResumePdf
+        getResumePdf,
+        rewriteResumeBullet,
+        renderHtmlToPdf,
+        handleParseLinkedinPdf
     }
 
 }

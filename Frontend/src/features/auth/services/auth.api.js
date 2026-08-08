@@ -47,7 +47,7 @@ export async function getMe() {
     try {
         const response = await api.get("/api/auth/get-me")
         return response.data
-    } catch (err) {
+    } catch {
         // For getMe, we don't necessarily want to throw an error that breaks the app
         // just return null if not logged in
         return null

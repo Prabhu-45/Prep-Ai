@@ -43,6 +43,25 @@ interviewRouter.post("/resume/pdf/:interviewReportId", authMiddleware.authUser, 
  */
 interviewRouter.post("/chat/:interviewId", authMiddleware.authUser, interviewController.chatWithCoachController)
 
+/**
+ * @route POST /api/interview/resume/rewrite/:interviewId
+ * @description Rewrite a resume bullet point using NVIDIA API.
+ * @access private
+ */
+interviewRouter.post("/resume/rewrite/:interviewId", authMiddleware.authUser, interviewController.rewriteResumeBulletController)
 
+/**
+ * @route POST /api/interview/resume/render-pdf
+ * @description Render HTML to PDF buffer.
+ * @access private
+ */
+interviewRouter.post("/resume/render-pdf", authMiddleware.authUser, interviewController.renderHtmlToPdfController)
+
+/**
+ * @route POST /api/interview/resume/parse-linkedin
+ * @description Parse a LinkedIn profile PDF using AI
+ * @access private
+ */
+interviewRouter.post("/resume/parse-linkedin", authMiddleware.authUser, upload.single("linkedinPdf"), interviewController.parseLinkedinPdfController)
 
 module.exports = interviewRouter

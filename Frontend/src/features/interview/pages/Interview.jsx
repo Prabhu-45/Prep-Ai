@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react'
+import React, { useState, useRef } from 'react'
 import { useNavigate, useParams } from 'react-router'
 import { 
     Code, 
@@ -21,6 +21,7 @@ import '../style/interview.scss'
 import { useInterview } from '../hooks/useInterview.js'
 import { useAuth } from '../../auth/hooks/useAuth.js'
 import CoachChat from '../components/CoachChat.jsx'
+import TemplateModal from '../components/TemplateModal.jsx'
 
 const NAV_ITEMS = [
     { id: 'technical', label: 'Technical Prep', icon: <Code size={20} /> },
@@ -85,6 +86,7 @@ const Interview = () => {
     const [ showProfile, setShowProfile ] = useState(false)
     const [ isEntering, setIsEntering ] = useState(true)
     const [ isCoachOpen, setIsCoachOpen ] = useState(false)
+    const [ isTemplateModalOpen, setIsTemplateModalOpen ] = useState(false)
     const { report, loading, getResumePdf } = useInterview()
     const { user, handleLogout } = useAuth()
     const { interviewId } = useParams()
@@ -195,7 +197,7 @@ const Interview = () => {
                     
                     <div className="nav-actions" style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                         <button
-                            onClick={() => alert('Insufficient API token')}
+                            onClick={() => setIsTemplateModalOpen(true)}
                             className='button ats-button' 
                             style={{ 
                                 width: '100%', 
@@ -207,7 +209,7 @@ const Interview = () => {
                             }}
                         >
                             <FileCheck size={18} />
-                            Download ATS Resume
+                            Interactive ATS Resume
                         </button>
 
                         <button
@@ -333,6 +335,7 @@ const Interview = () => {
             </div>
 
             <CoachChat isOpen={isCoachOpen} onClose={() => setIsCoachOpen(false)} interviewId={interviewId} />
+            <TemplateModal isOpen={isTemplateModalOpen} onClose={() => setIsTemplateModalOpen(false)} interviewId={interviewId} />
         </div>
     )
 }

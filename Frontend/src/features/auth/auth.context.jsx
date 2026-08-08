@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components */
 import { createContext, useState, useEffect } from "react";
 import { getMe } from "./services/auth.api";
 
@@ -16,7 +17,7 @@ export const AuthProvider = ({ children }) => {
                 if (data?.user) {
                     setUser(data.user)
                 }
-            } catch (err) {
+            } catch {
                 // No active session — user stays null
             } finally {
                 setLoading(false)
