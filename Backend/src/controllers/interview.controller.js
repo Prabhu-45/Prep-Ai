@@ -252,6 +252,61 @@ async function renderHtmlToPdfController(req, res) {
 }
 
 /**
+ * @name bulkResumeScanController
+ * @description Processes up to 5 resumes against a JD for the HR dashboard
+ */
+async function bulkResumeScanController(req, res) {
+    try {
+        const { jobDescription } = req.body;
+        const files = req.files;
+
+        if (!jobDescription) {
+            return res.status(400).json({ message: "Job Description is required" });
+        }
+
+        if (!files || files.length === 0) {
+            return res.status(400).json({ message: "At least one resume must be uploaded" });
+        }
+
+        if (files.length > 5) {
+            return res.status(400).json({ message: "Maximum 5 resumes allowed per scan" });
+        }
+
+        const aiService = require("../services/ai.service");
+        
+        // Process each file sequentially to avoid AI rate limits (429 Too Many Requests)
+        const results = [];
+        for (const file of files) {
+            let resumeText = "";
+            try {
+                const pdfData = new Uint8Array(file.buffer);
+                const parser = new pdfParse.PDFParse(pdfData);
+                const result = await parser.getText();
+                resumeText = (typeof result === 'string') ? result : (result.text || "");
+            } catch (err) {
+                console.error("Failed to parse PDF:", file.originalname, err);
+                results.push({ name: file.originalname, matchScore: 0, strengths: [], weaknesses: ["Failed to read PDF format"], summary: "Error reading file." });
+                continue;
+            }
+
+            const aiResult = await aiService.generateBulkResumeScore(jobDescription, resumeText, file.originalname);
+            results.push(aiResult);
+            
+            // Add a small 1-second delay between requests to be safe with free tier APIs
+            await new Promise(resolve => setTimeout(resolve, 1000));
+        }
+        
+        // Sort results descending by score
+        results.sort((a, b) => (b.matchScore || 0) - (a.matchScore || 0));
+
+        res.status(200).json({ success: true, results });
+    } catch (err) {
+        console.error("Bulk Resume Scan Error:", err);
+        res.status(500).json({ message: "Failed to process bulk scan." });
+    }
+}
+
+/**
  * @name parseLinkedinPdfController
  */
 async function parseLinkedinPdfController(req, res) {
@@ -293,5 +348,6 @@ module.exports = {
     chatWithCoachController,
     rewriteResumeBulletController,
     renderHtmlToPdfController,
-    parseLinkedinPdfController
+    parseLinkedinPdfController,
+    bulkResumeScanController
 }

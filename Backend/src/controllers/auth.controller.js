@@ -10,7 +10,7 @@ const tokenBlacklistModel = require("../models/blacklist.model")
  */
 async function registerUserController(req, res) {
     try {
-        const { username, email, password } = req.body
+        const { username, email, password, role } = req.body
 
         if (!username || !email || !password) {
             return res.status(400).json({
@@ -33,11 +33,12 @@ async function registerUserController(req, res) {
         const user = await userModel.create({
             username,
             email,
-            password: hash
+            password: hash,
+            role: role || 'student'
         })
 
         const token = jwt.sign(
-            { id: user._id, username: user.username },
+            { id: user._id, username: user.username, role: user.role },
             process.env.JWT_SECRET,
             { expiresIn: "1d" }
         )
@@ -54,7 +55,8 @@ async function registerUserController(req, res) {
             user: {
                 id: user._id,
                 username: user.username,
-                email: user.email
+                email: user.email,
+                role: user.role
             }
         })
     } catch (err) {
@@ -110,7 +112,7 @@ async function loginUserController(req, res) {
         }
 
         const token = jwt.sign(
-            { id: user._id, username: user.username },
+            { id: user._id, username: user.username, role: user.role },
             process.env.JWT_SECRET,
             { expiresIn: "1d" }
         )
@@ -125,7 +127,8 @@ async function loginUserController(req, res) {
             user: {
                 id: user._id,
                 username: user.username,
-                email: user.email
+                email: user.email,
+                role: user.role
             }
         })
     } catch (err) {
@@ -189,7 +192,8 @@ async function getMeController(req, res) {
             user: {
                 id: user._id,
                 username: user.username,
-                email: user.email
+                email: user.email,
+                role: user.role
             }
         })
     } catch (err) {

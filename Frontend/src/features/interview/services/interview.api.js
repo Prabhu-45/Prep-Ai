@@ -95,3 +95,15 @@ export const parseLinkedinPdf = async (pdfFile) => {
     const response = await api.post(`/api/interview/resume/parse-linkedin`, formData);
     return response.data;
 }
+
+/**
+ * @description Service to scan multiple resumes against a Job Description
+ */
+export const scanBulkResumes = async (formData) => {
+    const response = await api.post(`/api/interview/hr/scan`, formData, {
+        headers: {
+            'Content-Type': 'multipart/form-data',
+        },
+    });
+    return response.data;
+}

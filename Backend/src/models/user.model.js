@@ -17,8 +17,14 @@ const userSchema = new mongoose.Schema({
     password: {
         type: String,
         required: true
+    },
+
+    role: {
+        type: String,
+        enum: ['student', 'professional', 'hr'],
+        default: 'student'
     }
-})
+}, { timestamps: true })
 
 const userModel = mongoose.model("users", userSchema)
 

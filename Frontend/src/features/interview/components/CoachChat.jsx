@@ -109,7 +109,7 @@ const CoachChat = ({ isOpen, onClose, interviewId }) => {
 
             <div className='coach-sidebar__footer'>
                 <Sparkles size={12} />
-                <span>Prep-AI Career Coach</span>
+                <span>NIYUKTI Career Coach</span>
             </div>
         </div>
     )

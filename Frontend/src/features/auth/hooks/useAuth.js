@@ -29,10 +29,10 @@ export const useAuth = () => {
     /**
      * @description Handle register, returns the error message if any
      */
-    const handleRegister = async ({ username, email, password }) => {
+    const handleRegister = async ({ username, email, password, role }) => {
         setLoading(true)
         try {
-            const data = await register({ username, email, password })
+            const data = await register({ username, email, password, role })
             if (data?.user) {
                 setUser(data.user)
                 return { success: true }

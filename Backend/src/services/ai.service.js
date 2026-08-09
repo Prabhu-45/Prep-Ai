@@ -16,23 +16,15 @@ function extractTextFromRESTResponse(res) {
     }
 }
 
-/**
- * @description DIRECT REST interface with self-healing fallback
- */
-async function generateWithFallbackDirect(prompt, expectJson = true) {
-    // List of models verified available in 2026-04-07
-    const models = [
-        "gemini-3.1-flash-live-preview",
-        "gemini-2.5-flash",
-        "gemini-1.5-flash",
-        "gemini-pro"
-    ]
+async function generateWithFallbackDirect(prompt, expectJson = true, temperature = 0.7) {
+    // We will just use the primary model and retry on rate limits
+    const modelName = "gemini-2.5-flash";
+    let lastError = null;
+    let retries = 3;
 
-    let lastError = null
-
-    for (const modelName of models) {
+    while (retries > 0) {
         try {
-            console.log(`🚀 AI [REST]: Attempting '${modelName}'...`)
+            console.log(`🚀 AI [REST]: Attempting '${modelName}' (Retries left: ${retries})...`);
 
             const response = await axios.post(
                 `${BASE_URL}/${modelName}:generateContent?key=${API_KEY}`,
@@ -41,23 +33,21 @@ async function generateWithFallbackDirect(prompt, expectJson = true) {
                         parts: [{ text: prompt }]
                     }],
                     generationConfig: {
-                        temperature: 0.7,
+                        temperature: temperature,
                         responseMimeType: expectJson ? "application/json" : "text/plain"
                     }
                 },
                 {
                     headers: { 'Content-Type': 'application/json' },
-                    timeout: 45000 // Resume/Interview logic can take time
+                    timeout: 45000
                 }
-            )
+            );
 
-            const text = extractTextFromRESTResponse(response.data)
-            if (!text) throw new Error("Empty response from Gemini")
+            const text = extractTextFromRESTResponse(response.data);
+            if (!text) throw new Error("Empty response from Gemini");
 
             if (!expectJson) {
                 console.log(`✅ Success with model: ${modelName}`);
-                
-                // 🛡️ Defense: If the model stubbornly returns a JSON string anyway, try to extract the text
                 try {
                     const clean = text.replace(/```json|```/g, "").trim();
                     if (clean.startsWith("{") && clean.endsWith("}")) {
@@ -66,33 +56,42 @@ async function generateWithFallbackDirect(prompt, expectJson = true) {
                         if (parsed.reply) return parsed.reply;
                         if (parsed.message) return parsed.message;
                     }
-                } catch (e) {
-                    // Ignore parse errors, it's probably actual plain text
-                }
-                
+                } catch (e) {}
                 return text;
             }
 
-            // Clean JSON
-            const cleanJson = text.replace(/```json|```/g, "").trim()
-            const parsedData = JSON.parse(cleanJson)
+            const cleanJson = text.replace(/```json|```/g, "").trim();
+            const parsedData = JSON.parse(cleanJson);
+            if (!parsedData.title) parsedData.title = "Direct AI Strategy Session";
+            if (!parsedData.matchScore) parsedData.matchScore = 0;
 
-            // Essential schema fields for database integrity
-            if (!parsedData.title) parsedData.title = "Direct AI Strategy Session"
-            if (!parsedData.matchScore) parsedData.matchScore = 0
-
-            console.log(`✅ Success with model: ${modelName}`)
-            return parsedData
+            console.log(`✅ Success with model: ${modelName}`);
+            return parsedData;
 
         } catch (err) {
-            const apiError = err.response?.data?.error?.message || err.message
-            console.error(`⚠️ ${modelName} Failed:`, apiError)
-            lastError = err
+            const status = err.response?.status;
+            const apiError = err.response?.data?.error?.message || err.message;
+            console.error(`⚠️ ${modelName} Failed:`, apiError);
+            lastError = err;
+
+            // If Rate Limited (429), parse the wait time and retry
+            if (status === 429) {
+                const waitMatch = apiError.match(/retry in ([\d\.]+)s/);
+                const waitMs = waitMatch ? Math.ceil(parseFloat(waitMatch[1]) * 1000) + 1000 : 15000;
+                
+                console.log(`⏳ Rate limit hit! Waiting ${Math.round(waitMs/1000)} seconds before retrying...`);
+                await new Promise(res => setTimeout(res, waitMs));
+                retries--;
+            } else {
+                // If it's another error, don't retry, just break
+                break;
+            }
         }
     }
 
-    throw new Error(`AI Generation Failed: ${lastError?.response?.data?.error?.message || lastError?.message}`)
+    throw new Error(`AI Generation Failed: ${lastError?.response?.data?.error?.message || lastError?.message}`);
 }
+
 
 async function generateInterviewReport(data) {
     const { resume, selfDescription, jobDescription } = data;
@@ -264,13 +263,13 @@ Original Bullet: "${bullet}"`;
 async function renderHtmlToPdf(htmlContent) {
     const puppeteer = require('puppeteer');
     const browser = await puppeteer.launch({ 
-        headless: "new",
-        args: ['--no-sandbox', '--disable-setuid-sandbox'] 
+        headless: true,
+        args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage'] 
     });
     
     try {
         const page = await browser.newPage();
-        await page.setContent(htmlContent, { waitUntil: 'networkidle0' });
+        await page.setContent(htmlContent, { waitUntil: 'networkidle2' });
         
         const pdfBuffer = await page.pdf({
             format: 'A4',
@@ -344,6 +343,46 @@ ${text.substring(0, 8000)}`;
     }
 }
 
+/**
+ * @description Evaluates a single resume against a JD for the HR Bulk Scan feature
+ */
+async function generateBulkResumeScore(jobDescription, resumeText, candidateName) {
+    const prompt = `You are a highly precise, deterministic ATS (Applicant Tracking System).
+You must evaluate the candidate's resume strictly against the provided Job Description using this exact rubric to calculate the matchScore (0-100):
+- Skills Match (0-40 points): Calculate the percentage of required JD skills present in the resume.
+- Experience Match (0-40 points): Compare years of experience and domain relevance.
+- Education & Formatting (0-20 points): Evaluate degree requirements and overall resume clarity.
+
+Job Description:
+${jobDescription.substring(0, 3000)}
+
+Candidate Resume:
+${resumeText.substring(0, 4000)}
+
+Respond EXACTLY with the following JSON structure and nothing else. Do not use markdown blocks like \`\`\`json.
+{
+  "name": "${candidateName}",
+  "matchScore": 85,
+  "strengths": ["Matched skill 1", "Matched skill 2", "Strong experience in X"],
+  "weaknesses": ["Missing skill Y", "Lacks experience in Z"],
+  "summary": "1 sentence summary of candidate fit"
+}`;
+
+    try {
+        const data = await generateWithFallbackDirect(prompt, true, 0.0);
+        return data;
+    } catch (err) {
+        console.error("Bulk AI Error for candidate:", candidateName, err);
+        return {
+            name: candidateName,
+            matchScore: 0,
+            strengths: [],
+            weaknesses: ["AI Analysis Failed"],
+            summary: "Failed to parse resume."
+        };
+    }
+}
+
 module.exports = {
     generateWithFallback: generateWithFallbackDirect,
     generateInterviewReport,
@@ -351,5 +390,6 @@ module.exports = {
     generateCoachResponse,
     rewriteResumeBullet,
     renderHtmlToPdf,
-    parseLinkedinProfile
+    parseLinkedinProfile,
+    generateBulkResumeScore
 }

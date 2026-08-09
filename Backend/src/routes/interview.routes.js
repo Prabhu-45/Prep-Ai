@@ -59,9 +59,16 @@ interviewRouter.post("/resume/render-pdf", authMiddleware.authUser, interviewCon
 
 /**
  * @route POST /api/interview/resume/parse-linkedin
- * @description Parse a LinkedIn profile PDF using AI
+ * @description Parse a LinkedIn PDF and return a structured JSON resume.
  * @access private
  */
 interviewRouter.post("/resume/parse-linkedin", authMiddleware.authUser, upload.single("linkedinPdf"), interviewController.parseLinkedinPdfController)
+
+/**
+ * @route POST /api/interview/hr/scan
+ * @description Processes up to 5 resumes against a JD for the HR dashboard.
+ * @access private
+ */
+interviewRouter.post("/hr/scan", authMiddleware.authUser, upload.array("resumes", 5), interviewController.bulkResumeScanController)
 
 module.exports = interviewRouter

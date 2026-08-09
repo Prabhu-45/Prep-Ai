@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react'
+import React, { useState, useRef, useEffect } from 'react'
 import { useNavigate } from 'react-router'
 import {
     FileText,
@@ -22,7 +22,7 @@ import { useInterview } from '../hooks/useInterview.js'
 import { useAuth } from '../../auth/hooks/useAuth.js'
 
 const Home = () => {
-    const { loading, generateReport, reports } = useInterview()
+    const { loading, generateReport, reports, getReports } = useInterview()
     const { user, handleLogout } = useAuth()
     const [showProfile, setShowProfile] = useState(false)
     const [jobDescription, setJobDescription] = useState("")
@@ -32,6 +32,10 @@ const Home = () => {
     const resumeInputRef = useRef()
     const container = useRef()
     const navigate = useNavigate()
+
+    useEffect(() => {
+        getReports()
+    }, [])
 
     useGSAP(() => {
         const tl = gsap.timeline({ defaults: { ease: 'power4.out' } })
@@ -103,9 +107,9 @@ const Home = () => {
             {/* Dashboard Navigation */}
             <nav className='dashboard-nav glass'>
                 <div className='dashboard-nav__container'>
-                    <div className='dashboard-nav__logo' onClick={() => navigate('/dashboard')}>
-                        <Cpu size={24} />
-                        <span>Prep-AI</span>
+                    <div className='dashboard-nav__logo' onClick={() => navigate('/')} style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                        <img src="/logo.png" alt="NIYUKTI Logo" style={{ width: '40px', height: '40px', objectFit: 'contain' }} />
+                        <span style={{ fontSize: '1.4rem', fontWeight: 800 }}>NIYUKTI</span>
                     </div>
 
                     <div className='dashboard-nav__profile'>

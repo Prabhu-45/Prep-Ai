@@ -1,5 +1,6 @@
 import { getAllInterviewReports, generateInterviewReport, getInterviewReportById, generateResumePdf, rewriteResumeBullet, renderHtmlToPdf, parseLinkedinPdf } from "../services/interview.api"
 import { useContext, useEffect } from "react"
+import { generateReportHtml } from "../utils/reportPdfTemplate"
 import { InterviewContext } from "../interview.context"
 import { useParams } from "react-router"
 
@@ -82,7 +83,7 @@ export const useInterview = () => {
             const url = window.URL.createObjectURL(blob)
             const link = document.createElement("a")
             link.href = url
-            link.setAttribute("download", `PrepAI_Report_${interviewReportId.slice(-6)}.pdf`)
+            link.setAttribute("download", `NIYUKTI_Resume_${interviewReportId.slice(-6)}.pdf`)
             document.body.appendChild(link)
             link.click()
 
@@ -92,6 +93,36 @@ export const useInterview = () => {
         }
         catch (error) {
             console.error("❌ PDF Handle Failure:", error.message)
+            alert(`Download Failed: ${error.message}`)
+        } finally {
+            setLoading(false)
+        }
+    }
+
+    const downloadInterviewReportPdf = async (reportData, user) => {
+        setLoading(true)
+        try {
+            const htmlString = generateReportHtml(reportData, user)
+            const blob = await renderHtmlToPdf(htmlString)
+
+            if (blob.type !== 'application/pdf') {
+                const text = await blob.text()
+                const error = JSON.parse(text)
+                throw new Error(error.message || "Failed to generate valid PDF")
+            }
+
+            const url = window.URL.createObjectURL(blob)
+            const link = document.createElement("a")
+            link.href = url
+            link.setAttribute("download", `NIYUKTI_Analytics_${reportData._id.slice(-6)}.pdf`)
+            document.body.appendChild(link)
+            link.click()
+
+            window.URL.revokeObjectURL(url)
+            document.body.removeChild(link)
+        }
+        catch (error) {
+            console.error("❌ Analytics PDF Handle Failure:", error.message)
             alert(`Download Failed: ${error.message}`)
         } finally {
             setLoading(false)
@@ -131,6 +162,7 @@ export const useInterview = () => {
         getReportById,
         getReports,
         getResumePdf,
+        downloadInterviewReportPdf,
         rewriteResumeBullet,
         renderHtmlToPdf,
         handleParseLinkedinPdf

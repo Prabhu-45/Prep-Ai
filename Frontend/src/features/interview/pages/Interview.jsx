@@ -84,10 +84,9 @@ const RoadMapDay = ({ day }) => (
 const Interview = () => {
     const [ activeNav, setActiveNav ] = useState('technical')
     const [ showProfile, setShowProfile ] = useState(false)
-    const [ isEntering, setIsEntering ] = useState(true)
     const [ isCoachOpen, setIsCoachOpen ] = useState(false)
     const [ isTemplateModalOpen, setIsTemplateModalOpen ] = useState(false)
-    const { report, loading, getResumePdf } = useInterview()
+    const { report, loading, getResumePdf, downloadInterviewReportPdf } = useInterview()
     const { user, handleLogout } = useAuth()
     const { interviewId } = useParams()
     const navigate = useNavigate()
@@ -98,14 +97,13 @@ const Interview = () => {
         if (!loading && report && report._id === interviewId) {
             const ctx = gsap.context(() => {
                 const tl = gsap.timeline({ 
-                    defaults: { ease: 'power3.out', duration: 0.6 },
-                    onComplete: () => setIsEntering(false)
+                    defaults: { ease: 'power3.out', duration: 0.6 }
                 })
 
-                tl.from('.interview-layout', { y: 15, opacity: 0, scale: 0.98, duration: 0.8 })
-                  .from('.interview-nav__item', { x: -15, opacity: 0, stagger: 0.08, clearProps: 'all' }, '-=0.4')
-                  .from('.interview-content', { opacity: 0, y: 10, clearProps: 'all' }, '-=0.3')
-                  .from('.sidebar-content', { opacity: 0, stagger: 0.1, clearProps: 'all' }, '-=0.3')
+                tl.to('.interview-layout', { y: 0, opacity: 1, scale: 1, duration: 0.8 })
+                  .fromTo('.interview-nav__item', { x: -15, opacity: 0 }, { x: 0, opacity: 1, stagger: 0.08, clearProps: 'all' }, '-=0.4')
+                  .fromTo('.interview-content', { opacity: 0, y: 10 }, { opacity: 1, y: 0, clearProps: 'all' }, '-=0.3')
+                  .fromTo('.sidebar-content', { opacity: 0 }, { opacity: 1, stagger: 0.1, clearProps: 'all' }, '-=0.3')
             }, container)
 
             return () => ctx.revert()
@@ -137,9 +135,9 @@ const Interview = () => {
             
             <nav className='dashboard-nav glass'>
                 <div className='dashboard-nav__container'>
-                    <div className='dashboard-nav__logo' onClick={() => navigate('/dashboard')}>
-                        <Cpu size={24} />
-                        <span>Prep-AI</span>
+                    <div className='dashboard-nav__logo' onClick={() => navigate('/')} style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                        <img src="/logo.png" alt="NIYUKTI Logo" style={{ width: '40px', height: '40px', objectFit: 'contain' }} />
+                        <span style={{ fontSize: '1.4rem', fontWeight: 800 }}>NIYUKTI</span>
                     </div>
 
                     <div className='dashboard-nav__profile'>
@@ -177,7 +175,7 @@ const Interview = () => {
                 </div>
             </nav>
 
-            <div className={`interview-layout glass ${isEntering ? 'is-entering' : ''}`} style={{ transition: 'opacity 0.4s ease' }}>
+            <div className="interview-layout glass" style={{ opacity: 0, transform: 'translateY(15px) scale(0.98)' }}>
 
                 {/* Left Nav */}
                 <nav className='interview-nav'>
@@ -213,7 +211,7 @@ const Interview = () => {
                         </button>
 
                         <button
-                            onClick={() => { getResumePdf(interviewId) }}
+                            onClick={() => { downloadInterviewReportPdf(report, user) }}
                             className='button primary-button' 
                             style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
                         >

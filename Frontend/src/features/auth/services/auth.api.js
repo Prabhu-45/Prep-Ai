@@ -20,10 +20,10 @@ export async function login({ email, password }) {
     }
 }
 
-export async function register({ username, email, password }) {
+export async function register({ username, email, password, role }) {
     try {
         const response = await api.post("/api/auth/register", {
-            username, email, password
+            username, email, password, role
         })
         return response.data
     } catch (err) {

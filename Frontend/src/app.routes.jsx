@@ -6,6 +6,7 @@ import Home from "./features/interview/pages/Home";
 import Interview from "./features/interview/pages/Interview";
 import Landing from "./features/landing/pages/Landing";
 import ResumeBuilder from "./features/interview/pages/ResumeBuilder";
+import HrDashboard from "./features/interview/pages/HrDashboard";
 
 export const router = createBrowserRouter([
     {
@@ -31,6 +32,10 @@ export const router = createBrowserRouter([
     {
         path: "/interview/:interviewId/resume",
         element: <Protected><ResumeBuilder /></Protected>
+    },
+    {
+        path: "/hr-dashboard",
+        element: <Protected><HrDashboard /></Protected>
     },
     {
         path: "*",
