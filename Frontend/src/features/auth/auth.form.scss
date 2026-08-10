@@ -2,17 +2,25 @@
     width: 100%;
     min-height: 100vh;
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     justify-content: center;
-    padding: 2rem;
+    padding: 4rem 2rem;
     position: relative;
+    background: #0a0a0a; // Fallback background
+    overflow-y: auto;
 
     .form-card {
         width: 100%;
+        margin: auto; // This ensures it centers when there is space, but scrolls normally when there isn't
         max-width: 440px;
         padding: 3rem;
         position: relative;
         z-index: 10;
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        background: rgba(20, 20, 20, 0.4);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
 
         &__header {
             text-align: center;
@@ -23,10 +31,13 @@
                 font-weight: 800;
                 letter-spacing: -0.02em;
                 margin-bottom: 0.5rem;
+                background: linear-gradient(135deg, #fff 0%, #a0a0a0 100%);
+                -webkit-background-clip: text;
+                -webkit-text-fill-color: transparent;
             }
 
             p {
-                color: var(--text-muted);
+                color: rgba(255, 255, 255, 0.6);
                 font-size: 0.95rem;
             }
         }
@@ -41,23 +52,36 @@
             display: flex;
             flex-direction: column;
             gap: 0.5rem;
+            position: relative;
 
             label {
                 font-size: 0.85rem;
                 font-weight: 600;
-                color: var(--text-muted);
+                color: rgba(255, 255, 255, 0.7);
                 padding-left: 0.25rem;
+            }
+
+            .input-icon {
+                position: absolute;
+                left: 1rem;
+                top: 2.2rem;
+                color: rgba(255, 255, 255, 0.4);
+                transition: color 0.3s ease;
             }
 
             input {
                 width: 100%;
                 background: rgba(255, 255, 255, 0.03);
-                border: 1px solid var(--glass-border);
+                border: 1px solid rgba(255, 255, 255, 0.1);
                 padding: 1rem 1.2rem;
                 border-radius: 0.75rem;
-                color: var(--text-main);
+                color: #fff;
                 font-size: 1rem;
                 transition: all 0.3s ease;
+
+                &.has-icon {
+                    padding-left: 2.8rem;
+                }
 
                 &::placeholder {
                     color: rgba(255, 255, 255, 0.2);
@@ -67,7 +91,48 @@
                     outline: none;
                     border-color: var(--primary);
                     background: rgba(255, 255, 255, 0.05);
-                    box-shadow: 0 0 0 4px rgba(255, 30, 86, 0.1);
+                    box-shadow: 0 0 0 4px rgba(var(--primary-rgb), 0.1);
+                }
+
+                &:focus + .input-icon,
+                &:focus ~ .input-icon {
+                    color: var(--primary);
+                }
+            }
+        }
+
+        .role-selector {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 0.5rem;
+
+            label {
+                flex: 1;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                gap: 0.5rem;
+                padding: 1rem;
+                background: rgba(255, 255, 255, 0.03);
+                border: 1px solid rgba(255, 255, 255, 0.1);
+                border-radius: 0.75rem;
+                cursor: pointer;
+                transition: all 0.3s ease;
+                color: rgba(255, 255, 255, 0.6);
+
+                input {
+                    display: none;
+                }
+
+                &:hover {
+                    background: rgba(255, 255, 255, 0.05);
+                    color: #fff;
+                }
+
+                &.selected {
+                    background: rgba(var(--primary-rgb), 0.1);
+                    border-color: var(--primary);
+                    color: var(--primary);
                 }
             }
         }
@@ -81,16 +146,17 @@
             margin-top: 2rem;
             text-align: center;
             font-size: 0.95rem;
-            color: var(--text-muted);
+            color: rgba(255, 255, 255, 0.5);
 
             a {
                 color: var(--primary);
                 font-weight: 600;
                 text-decoration: none;
                 margin-left: 0.25rem;
+                transition: color 0.2s ease;
                 
                 &:hover {
-                    text-decoration: underline;
+                    color: #ff3366;
                 }
             }
         }
@@ -99,8 +165,8 @@
             background: rgba(239, 68, 68, 0.1);
             border: 1px solid rgba(239, 68, 68, 0.2);
             color: #ef4444;
-            padding: 0.75rem 1rem;
-            border-radius: 0.75rem;
+            padding: 1rem;
+            border-radius: 0.5rem;
             font-size: 0.9rem;
             margin-bottom: 1.5rem;
             text-align: center;

@@ -5,6 +5,7 @@ import gsap from 'gsap'
 import { useGSAP } from '@gsap/react'
 import { useAuth } from '../hooks/useAuth'
 import "../auth.form.scss"
+import AuthBackground from '../components/AuthBackground'
 
 const Register = () => {
     const { handleRegister, user } = useAuth()
@@ -19,12 +20,35 @@ const Register = () => {
     const [ error, setError ] = useState("")
 
     useGSAP(() => {
-        gsap.from('.form-card', {
-            y: 40,
+        const tl = gsap.timeline({ defaults: { ease: 'power4.out' } });
+
+        tl.from('.form-card', {
+            y: 50,
             opacity: 0,
             duration: 1,
-            ease: 'power4.out'
+            scale: 0.95
         })
+        .from('.form-card__header h1, .form-card__header p', {
+            y: 20,
+            opacity: 0,
+            duration: 0.8,
+            stagger: 0.1
+        }, "-=0.5")
+        .from('.input-group', {
+            x: -20,
+            opacity: 0,
+            duration: 0.8,
+            stagger: 0.1
+        }, "-=0.6")
+        .from('.role-selector', {
+            y: 20,
+            opacity: 0,
+            duration: 0.8
+        }, "-=0.4")
+        .from('.form-card__footer', {
+            opacity: 0,
+            duration: 0.8
+        }, "-=0.4");
     }, { scope: container })
 
     useEffect(() => {
@@ -50,8 +74,7 @@ const Register = () => {
 
     return (
         <main className='auth-container' ref={container}>
-            <div className="blob blob--1"></div>
-            <div className="blob blob--2"></div>
+            <AuthBackground />
 
             <div className="form-card glass">
                 <div className="form-card__header">
@@ -118,7 +141,7 @@ const Register = () => {
                         <div 
                             className={`role-card ${role === 'hr' ? 'active' : ''}`}
                             onClick={() => setRole('hr')}
-                            style={{ flex: 1, padding: '1rem', borderRadius: '12px', background: role === 'hr' ? 'var(--secondary)' : 'rgba(255,255,255,0.05)', border: `1px solid ${role === 'hr' ? 'var(--secondary)' : 'var(--border)'}`, cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', transition: 'all 0.3s' }}
+                            style={{ flex: 1, padding: '1rem', borderRadius: '12px', background: role === 'hr' ? 'var(--primary)' : 'rgba(255,255,255,0.05)', border: `1px solid ${role === 'hr' ? 'var(--primary)' : 'var(--border)'}`, cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', transition: 'all 0.3s' }}
                         >
                             <Building size={24} color={role === 'hr' ? '#fff' : 'var(--text-muted)'} />
                             <span style={{ fontSize: '0.8rem', color: role === 'hr' ? '#fff' : 'var(--text-muted)', fontWeight: 600, textAlign: 'center' }}>HR / Company</span>

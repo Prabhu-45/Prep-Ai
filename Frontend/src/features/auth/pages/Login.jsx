@@ -5,6 +5,7 @@ import gsap from 'gsap'
 import { useGSAP } from '@gsap/react'
 import "../auth.form.scss"
 import { useAuth } from '../hooks/useAuth'
+import AuthBackground from '../components/AuthBackground'
 
 const Login = () => {
     const { handleLogin, user } = useAuth()
@@ -17,12 +18,30 @@ const Login = () => {
     const [ error, setError ] = useState("")
 
     useGSAP(() => {
-        gsap.from('.form-card', {
-            y: 40,
+        const tl = gsap.timeline({ defaults: { ease: 'power4.out' } });
+
+        tl.from('.form-card', {
+            y: 50,
             opacity: 0,
             duration: 1,
-            ease: 'power4.out'
+            scale: 0.95
         })
+        .from('.form-card__header h1, .form-card__header p', {
+            y: 20,
+            opacity: 0,
+            duration: 0.8,
+            stagger: 0.1
+        }, "-=0.5")
+        .from('.input-group', {
+            x: -20,
+            opacity: 0,
+            duration: 0.8,
+            stagger: 0.1
+        }, "-=0.6")
+        .from('.form-card__footer', {
+            opacity: 0,
+            duration: 0.8
+        }, "-=0.4");
     }, { scope: container })
 
     useEffect(() => {
@@ -48,8 +67,7 @@ const Login = () => {
 
     return (
         <main className='auth-container' ref={container}>
-            <div className="blob blob--1"></div>
-            <div className="blob blob--2"></div>
+            <AuthBackground />
             
             <div className="form-card glass">
                 <div className="form-card__header">
