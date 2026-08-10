@@ -87,7 +87,9 @@ const Register = () => {
                 <form onSubmit={handleSubmit}>
                     <div className="input-group">
                         <label htmlFor="username">Full Name</label>
+                        <User size={18} className='input-icon' />
                         <input
+                            className="has-icon"
                             onChange={(e) => { setUsername(e.target.value) }}
                             type="text" 
                             id="username" 
@@ -98,7 +100,9 @@ const Register = () => {
                     </div>
                     <div className="input-group">
                         <label htmlFor="email">Email Address</label>
+                        <Mail size={18} className='input-icon' />
                         <input
+                            className="has-icon"
                             onChange={(e) => { setEmail(e.target.value) }}
                             type="email" 
                             id="email" 
@@ -111,6 +115,7 @@ const Register = () => {
                         <label htmlFor="password">Password</label>
                         <Lock size={18} className='input-icon' />
                         <input
+                            className="has-icon"
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
                             type="password" 

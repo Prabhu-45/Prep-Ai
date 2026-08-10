@@ -20,6 +20,7 @@ import { useGSAP } from '@gsap/react'
 import "../style/home.scss"
 import { useInterview } from '../hooks/useInterview.js'
 import { useAuth } from '../../auth/hooks/useAuth.js'
+import AuroraBackground from '../components/AuroraBackground'
 
 const Home = () => {
     const { loading, generateReport, reports, getReports } = useInterview()
@@ -101,8 +102,7 @@ const Home = () => {
 
     return (
         <div className='home-page' ref={container}>
-            <div className="blob blob--1"></div>
-            <div className="blob blob--2"></div>
+            <AuroraBackground />
 
             {/* Dashboard Navigation */}
             <nav className='dashboard-nav glass'>

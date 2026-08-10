@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router';
 import { UploadCloud, FileText, Settings, Users, ArrowLeft, LogOut, CheckCircle, XCircle } from 'lucide-react';
 import { useAuth } from '../../auth/hooks/useAuth';
 import { scanBulkResumes } from '../services/interview.api';
+import NetworkBackground from '../components/NetworkBackground';
 import './HrDashboard.scss';
 
 const HrDashboard = () => {
@@ -74,13 +75,14 @@ const HrDashboard = () => {
         }
     };
 
-    const handleSignOut = () => {
-        handleLogout();
+    const handleSignOut = async () => {
+        await handleLogout();
         navigate('/');
     };
 
     return (
         <div className="hr-dashboard">
+            <NetworkBackground />
             <nav className="dashboard-nav glass">
                 <div className="dashboard-nav__container" style={{ display: 'flex', justifyContent: 'space-between', width: '100%', alignItems: 'center' }}>
                     <div className='dashboard-nav__logo' onClick={() => navigate('/')} style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer' }}>

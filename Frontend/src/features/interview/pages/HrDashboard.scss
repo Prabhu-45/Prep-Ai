@@ -2,6 +2,7 @@
     min-height: 100vh;
     background-color: var(--background);
     color: var(--text-color);
+    position: relative;
 }
 
 .dashboard-nav {
@@ -12,12 +13,16 @@
     border-bottom: 1px solid var(--border);
     background: rgba(10, 10, 10, 0.8);
     backdrop-filter: blur(10px);
+    position: relative;
+    z-index: 50;
 }
 
 .hr-content {
     max-width: 1200px;
     margin: 0 auto;
     padding: 100px 2rem 2rem;
+    position: relative;
+    z-index: 10;
 }
 
 .hr-header {

@@ -80,7 +80,9 @@ const Login = () => {
                 <form onSubmit={handleSubmit}>
                     <div className="input-group">
                         <label htmlFor="email">Email Address</label>
+                        <Mail size={18} className='input-icon' />
                         <input
+                            className="has-icon"
                             onChange={(e) => { setEmail(e.target.value) }}
                             type="email" 
                             id="email" 
@@ -91,7 +93,9 @@ const Login = () => {
                     </div>
                     <div className="input-group">
                         <label htmlFor="password">Password</label>
+                        <Lock size={18} className='input-icon' />
                         <input
+                            className="has-icon"
                             onChange={(e) => { setPassword(e.target.value) }}
                             type="password" 
                             id="password" 
